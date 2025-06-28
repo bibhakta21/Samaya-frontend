@@ -12,3 +12,7 @@
 body {
   font-family: "Poppins", sans-serif;
 }
+.custom-gap {
+  column-gap: -100px; /* smaller horizontal space */
+  row-gap: 2.5rem;    /* vertical space can be bigger */
+}
