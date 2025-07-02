@@ -7,7 +7,8 @@ import { UserContext } from "../../context/UserContext";
 
 const backendURL = "http://localhost:3000";
 
-const ProductCard = ({ product, isBookmarked, onToggleBookmark }) => {
+// --------- Product Card Component ---------
+const ProductCard = ({ product, isBookmarked, onToggleBookmark, onAddToCart }) => {
   const navigate = useNavigate();
 
   const defaultImage = product.imageCombinations.find(
@@ -34,7 +35,8 @@ const ProductCard = ({ product, isBookmarked, onToggleBookmark }) => {
   return (
     <div
       onClick={handleCardClick}
-     className="bg-white rounded-xl p-4 relative group shadow-md hover:shadow-lg transition duration-300 w-full max-w-[260px] mx-0">
+      className="bg-white rounded-xl p-4 relative group shadow-md hover:shadow-lg transition duration-300 w-full max-w-[260px] mx-0"
+    >
       <div className="relative">
         <img
           src={imageUrl}
@@ -44,7 +46,10 @@ const ProductCard = ({ product, isBookmarked, onToggleBookmark }) => {
         <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
           <button
             className="bg-blue-600 text-white p-2 rounded-full hover:scale-110 transition"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToCart(product);
+            }}
           >
             <FaCartPlus />
           </button>
@@ -75,6 +80,7 @@ const ProductCard = ({ product, isBookmarked, onToggleBookmark }) => {
   );
 };
 
+// --------- Main Component ---------
 const NumberCounter = () => {
   const { user } = useContext(UserContext);
   const [products, setProducts] = useState([]);
@@ -138,6 +144,44 @@ const NumberCounter = () => {
     }
   };
 
+  const handleAddToCart = async (product) => {
+    if (!user) {
+      toast.error("Please login to buy");
+      return;
+    }
+
+    const defaultCombo =
+      product.imageCombinations.find(
+        (combo) => combo.dialColor === "black" && combo.bandColor === "black"
+      ) || product.imageCombinations[0];
+
+    try {
+      await axios.post(
+        `${backendURL}/api/bookings`,
+        {
+          productId: product._id,
+          quantity: 1,
+          productImage: defaultCombo?.imageUrl || "",
+          productShortName: product.shortName,
+          price: product.discountPrice || product.price,
+          dialColor: defaultCombo?.dialColor || null,
+          bandColor: defaultCombo?.bandColor || null,
+          addressOne: null,
+          country: null,
+          number: null,
+          paymentType: null,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      toast.success("Product added to cart");
+    } catch (err) {
+      console.error("Booking failed:", err);
+      toast.error("Failed to add to cart");
+    }
+  };
+
   return (
     <section className="py-12 px-4 sm:px-6 lg:px-10 mt-3">
       <div className="text-center max-w-xl mx-auto mb-10">
@@ -151,6 +195,7 @@ const NumberCounter = () => {
               product={product}
               isBookmarked={bookmarkedIds.has(product._id)}
               onToggleBookmark={toggleBookmark}
+              onAddToCart={handleAddToCart}
             />
           ))}
         </div>
