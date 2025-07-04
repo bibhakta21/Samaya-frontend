@@ -17,6 +17,13 @@ const Button = () => {
       >
         Secondary
       </button>
+      <button
+        type="button"
+        className="inline-block rounded border-2 border-success px-6 pb-[6px] pt-2 text-xs font-medium uppercase leading-normal text-success transition duration-150 ease-in-out hover:border-success-600 hover:bg-success-50/50 hover:text-success-600 focus:border-success-600 focus:bg-success-50/50 focus:text-success-600 focus:outline-none focus:ring-0 active:border-success-700 active:text-success-700 motion-reduce:transition-none dark:hover:bg-green-950 dark:focus:bg-green-950"
+        data-twe-ripple-init
+      >
+        Success
+      </button>
      
   );
 };
