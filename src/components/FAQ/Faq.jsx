@@ -12,6 +12,11 @@ const faqs = [
     id: "delivery-delays",
     answer: `Delivery delays can occur due to weather conditions, customs clearance, or high order volumes during festive seasons...`,
   },
+  {
+    question: "How to contact us?",
+    id: "contact-us",
+    answer: `You can contact us via our Help Center by submitting a support ticket, starting a live chat, or emailing our support team...`,
+  },
  
 ];
 
