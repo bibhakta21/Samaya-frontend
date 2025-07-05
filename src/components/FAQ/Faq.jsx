@@ -7,7 +7,12 @@ const faqs = [
     id: "return-item",
     answer: `Returning your item is simple and hassle-free. If you're not completely satisfied with your watch, you can initiate a return within 14 days of delivery...`,
   },
-  
+  {
+    question: "What are the most common reasons for delivery delays?",
+    id: "delivery-delays",
+    answer: `Delivery delays can occur due to weather conditions, customs clearance, or high order volumes during festive seasons...`,
+  },
+ 
 ];
 
 export default function FAQPage() {
