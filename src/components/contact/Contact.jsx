@@ -9,7 +9,7 @@ export default function Contact() {
   return (
     <div className="min-h-screen bg-white flex flex-col md:flex-row items-center justify-center px-4 md:px-16 py-10 font-[Poppins]">
 
-    
+      
       <div className="w-full md:w-1/2 bg-white rounded-xl shadow-md p-6 md:p-10 mb-10 md:mb-0">
         <h2 className="text-4xl font-bold text-black mb-2">
           Get in <span className="text-[#1d4ed8]">Touch</span>
@@ -59,7 +59,6 @@ export default function Contact() {
           </button>
         </form>
 
-       
         <div className="mt-8 flex flex-col sm:flex-row sm:justify-between text-sm text-gray-700 space-y-4 sm:space-y-0 sm:space-x-6">
           <div className="flex items-center space-x-2">
             <FiPhone className="text-lg text-[#1d4ed8]" />
@@ -76,6 +75,15 @@ export default function Contact() {
         </div>
       </div>
 
+    
+      <div className="w-full md:w-1/2 px-0 md:px-6">
+        <iframe
+          title="Location Map"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.387690830764!2d85.33623877531636!3d27.705102125358845!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb199e091c56a3%3A0x1468d146930b2c9b!2sBaba%20Oil%20Store!5e0!3m2!1sen!2snp!4v1685621302144!5m2!1sen!2snp"
+          className="w-full h-96 md:h-[480px] rounded-xl border"
+          loading="lazy"
+        ></iframe>
+      </div>
     </div>
   );
 }
