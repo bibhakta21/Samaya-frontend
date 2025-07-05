@@ -17,7 +17,21 @@ const faqs = [
     id: "contact-us",
     answer: `You can contact us via our Help Center by submitting a support ticket, starting a live chat, or emailing our support team...`,
   },
- 
+  {
+    question: "What is warranty policy?",
+    id: "warranty-policy",
+    answer: `All watches come with a 1-year warranty that covers manufacturing defects. Damage due to misuse or accidents is not covered...`,
+  },
+  {
+    question: "Why am I encountering errors while placing an order?",
+    id: "order-errors",
+    answer: `Errors may occur due to invalid payment details, expired cards, or poor internet connectivity. Try again or contact support...`,
+  },
+  {
+    question: "What is return policy in samaya?",
+    id: "samaya-return-policy",
+    answer: `Samaya follows the same return policy—items must be returned within 14 days in original condition and packaging...`,
+  },
 ];
 
 export default function FAQPage() {
