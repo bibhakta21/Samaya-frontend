@@ -4,12 +4,47 @@ import { FiHelpCircle, FiMail, FiPhone } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
 export default function Contact() {
- 
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const submitForm = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch("http://localhost:3000/api/contact/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(data.message);
+        setFormData({ name: "", email: "", phone: "", message: "" });
+      } else {
+        toast.error(data.error);
+      }
+    } catch (error) {
+      console.error("Error submitting the form:", error);
+      toast.error("Failed to submit. Please try again.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white flex flex-col md:flex-row items-center justify-center px-4 md:px-16 py-10 font-[Poppins]">
 
-      
+      {/* Left Section - Contact Form */}
       <div className="w-full md:w-1/2 bg-white rounded-xl shadow-md p-6 md:p-10 mb-10 md:mb-0">
         <h2 className="text-4xl font-bold text-black mb-2">
           Get in <span className="text-[#1d4ed8]">Touch</span>
@@ -59,6 +94,7 @@ export default function Contact() {
           </button>
         </form>
 
+        {/* Contact Info */}
         <div className="mt-8 flex flex-col sm:flex-row sm:justify-between text-sm text-gray-700 space-y-4 sm:space-y-0 sm:space-x-6">
           <div className="flex items-center space-x-2">
             <FiPhone className="text-lg text-[#1d4ed8]" />
@@ -75,7 +111,7 @@ export default function Contact() {
         </div>
       </div>
 
-    
+      {/* Right Section - Map */}
       <div className="w-full md:w-1/2 px-0 md:px-6">
         <iframe
           title="Location Map"
