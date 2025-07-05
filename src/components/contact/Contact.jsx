@@ -9,6 +9,7 @@ export default function Contact() {
   return (
     <div className="min-h-screen bg-white flex flex-col md:flex-row items-center justify-center px-4 md:px-16 py-10 font-[Poppins]">
 
+    
       <div className="w-full md:w-1/2 bg-white rounded-xl shadow-md p-6 md:p-10 mb-10 md:mb-0">
         <h2 className="text-4xl font-bold text-black mb-2">
           Get in <span className="text-[#1d4ed8]">Touch</span>
@@ -58,7 +59,21 @@ export default function Contact() {
           </button>
         </form>
 
-  
+       
+        <div className="mt-8 flex flex-col sm:flex-row sm:justify-between text-sm text-gray-700 space-y-4 sm:space-y-0 sm:space-x-6">
+          <div className="flex items-center space-x-2">
+            <FiPhone className="text-lg text-[#1d4ed8]" />
+            <span>9813056161</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <FiMail className="text-lg text-[#1d4ed8]" />
+            <span>info@samaya.com</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <FiHelpCircle className="text-lg text-[#1d4ed8]" />
+            <a href="/faq" className="text-blue-600 hover:underline">FAQ</a>
+          </div>
+        </div>
       </div>
 
     </div>
