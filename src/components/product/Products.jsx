@@ -35,41 +35,46 @@ const ProductCard = ({ product, isBookmarked, onToggleBookmark }) => {
     onToggleBookmark(product._id);
   };
 
-  const handleAddToCart = async (e) => {
-    e.stopPropagation();
-    if (!user) {
-      toast.error("Please login to buy");
-      return;
-    }
-
-    try {
-      const res = await await axios.post(
-  `${backendURL}/api/bookings`,
-  {
-    productId: product._id,
-    quantity: 1,
-    productImage: defaultCombo?.imageUrl || "",
-    productShortName: product.shortName,
-    price: product.discountPrice || product.price,
-    dialColor: defaultCombo?.dialColor || null,
-    bandColor: defaultCombo?.bandColor || null,
-    addressOne: null,
-    country: null,
-    number: null,
-    paymentType: null,
-  },
-  {
-    headers: { Authorization: `Bearer ${token}` },
+ const handleAddToCart = async (e) => {
+  e.stopPropagation();
+  if (!user) {
+    toast.error("Please login to buy");
+    return;
   }
-);
 
+  try {
+    const res = await axios.post(
+      `${backendURL}/api/bookings`,
+      {
+        productId: product._id,
+        quantity: 1,
+        productImage: defaultCombo?.imageUrl || "",
+        productShortName: product.shortName,
+        price: product.discountPrice || product.price,
+        dialColor: defaultCombo?.dialColor || null,
+        bandColor: defaultCombo?.bandColor || null,
+        addressOne: null,
+        country: null,
+        number: null,
+        paymentType: null,
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
 
-      toast.success("Product added to cart");
-    } catch (err) {
-      console.error("Booking failed:", err);
-      toast.error("Failed to add to cart");
-    }
-  };
+    toast.success("Product added to cart");
+
+    // 👇 Wait 2 seconds before reloading
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000); // 2000 milliseconds = 2 seconds
+  } catch (err) {
+    console.error("Booking failed:", err);
+    toast.error("Failed to add to cart");
+  }
+};
+
 
   return (
     <div
