@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 const Products = () => {
-  
+   const [products, setProducts] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [isUpdateMode, setIsUpdateMode] = useState(false);
+  const [updateProductId, setUpdateProductId] = useState(null);
   return (
     <div className="p-6">
       <h1 className="text-xl font-semibold mb-4">Product Management</h1>
