@@ -10,6 +10,14 @@ import Story from './Story';
 import Users from './users';
 
 const Dashboard = () => {
+   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeMenu, setActiveMenu] = useState('dashboard');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
+  const { user, logout, setUser } = useContext(UserContext);
+  const navigate = useNavigate();
+
+
   
 
   return (
