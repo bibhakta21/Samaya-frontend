@@ -6,6 +6,15 @@ const Products = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [isUpdateMode, setIsUpdateMode] = useState(false);
   const [updateProductId, setUpdateProductId] = useState(null);
+   const [productData, setProductData] = useState({
+    shortName: "",
+    fullName: "",
+    price: "",
+    discountPrice: "",
+    description: "",
+    type: "digital",
+    inStock: true,
+  });
   return (
     <div className="p-6">
       <h1 className="text-xl font-semibold mb-4">Product Management</h1>
