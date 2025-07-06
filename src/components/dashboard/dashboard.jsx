@@ -10,14 +10,14 @@ import Story from './Story';
 import Users from './users';
 
 const Dashboard = () => {
-   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
   const { user, logout, setUser } = useContext(UserContext);
   const navigate = useNavigate();
 
-   // State for Profile Editing
+
   const [editForm, setEditForm] = useState({
     username: user?.username || "",
     email: user?.email || "",
@@ -25,7 +25,7 @@ const Dashboard = () => {
   });
   const [error, setError] = useState("");
 
-  // Sidebar menu items
+  
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <FaHouse /> },
     { id: 'products', label: 'Products', icon: <FaBox /> },
@@ -35,9 +35,74 @@ const Dashboard = () => {
 
   ];
 
+  const handleEditChange = (e) => {
+    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+    setError(""); 
+  };
+
+  const validateForm = () => {
+    if (!editForm.username.trim()) {
+      setError("Username cannot be empty.");
+      return false;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(editForm.email)) {
+      setError("Invalid email format.");
+      return false;
+    }
+    if (!/^[0-9]{10,15}$/.test(editForm.phone)) {
+      setError("Phone number must be between 10-15 digits.");
+      return false;
+    }
+    return true;
+  };
 
 
-  
+  const handleSave = async () => {
+    if (!validateForm()) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:3000/api/users/me", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(editForm),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Failed to update profile.");
+        return;
+      }
+
+      setUser(data.user); 
+      setIsEditPopupOpen(false);
+      setIsDropdownOpen(false);
+    } catch (error) {
+      setError("Something went wrong. Please try again.");
+    }
+  };
+
+  // Logout Function
+  const handleLogout = () => {
+    logout();
+    navigate("/login"); 
+  };
+
+  const renderContent = () => {
+    switch (activeMenu) {
+      case 'dashboard': return <DashboardHome />;
+      case 'products': return <Products />;
+      case 'orders': return <Orders />;
+      case 'users': return <Users />;
+      case 'contacts': return <Contacts />;
+      case 'story': return <Story />;
+      default: return null;
+    }
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col">
