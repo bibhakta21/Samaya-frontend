@@ -15,6 +15,31 @@ const Products = () => {
     type: "digital",
     inStock: true,
   });
+
+   const [imageInputs, setImageInputs] = useState([
+    { dialColor: "", bandColor: "", image: null },
+  ]);
+  const [token] = useState(localStorage.getItem("token"));
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/api/products");
+      setProducts(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+   const handleImageInputChange = (index, field, value) => {
+    const updated = [...imageInputs];
+    updated[index][field] = value;
+    setImageInputs(updated);
+  };
+
   return (
     <div className="p-6">
       <h1 className="text-xl font-semibold mb-4">Product Management</h1>
