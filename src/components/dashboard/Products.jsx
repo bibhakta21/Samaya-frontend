@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 const Products = () => {
-   const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [isUpdateMode, setIsUpdateMode] = useState(false);
   const [updateProductId, setUpdateProductId] = useState(null);
-   const [productData, setProductData] = useState({
+
+  const [productData, setProductData] = useState({
     shortName: "",
     fullName: "",
     price: "",
@@ -16,7 +17,7 @@ const Products = () => {
     inStock: true,
   });
 
-   const [imageInputs, setImageInputs] = useState([
+  const [imageInputs, setImageInputs] = useState([
     { dialColor: "", bandColor: "", image: null },
   ]);
   const [token] = useState(localStorage.getItem("token"));
@@ -34,10 +35,112 @@ const Products = () => {
     }
   };
 
-   const handleImageInputChange = (index, field, value) => {
+  const handleImageInputChange = (index, field, value) => {
     const updated = [...imageInputs];
     updated[index][field] = value;
     setImageInputs(updated);
+  };
+
+  const resetForm = () => {
+    setProductData({
+      shortName: "",
+      fullName: "",
+      price: "",
+      discountPrice: "",
+      description: "",
+      type: "digital",
+      inStock: true,
+    });
+    setImageInputs([{ dialColor: "", bandColor: "", image: null }]);
+    setUpdateProductId(null);
+    setIsUpdateMode(false);
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const formData = new FormData();
+      Object.entries(productData).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
+
+      imageInputs.forEach((input) => {
+        formData.append("dialColor[]", input.dialColor);
+        formData.append("bandColor[]", input.bandColor);
+        if (input.image) {
+          formData.append("images", input.image);
+        }
+      });
+
+      if (isUpdateMode && updateProductId) {
+        // Update existing product
+        await axios.put(
+          `http://localhost:3000/api/products/${updateProductId}`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        alert("Product updated!");
+      } else {
+        // Create new product
+        const res = await axios.post("http://localhost:3000/api/products", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        alert("Product uploaded!");
+        setProducts((prev) => [...prev, res.data.product]);
+      }
+
+      fetchProducts();
+      setModalOpen(false);
+      resetForm();
+    } catch (err) {
+      alert("Error submitting product");
+      console.error(err);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    try {
+      await axios.delete(`http://localhost:3000/api/products/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setProducts(products.filter((p) => p._id !== id));
+      alert("Product deleted successfully");
+    } catch (err) {
+      alert("Failed to delete product");
+    }
+  };
+
+  const handleUpdate = (product) => {
+
+    setProductData({
+      shortName: product.shortName || "",
+      fullName: product.fullName || "",
+      price: product.price || "",
+      discountPrice: product.discountPrice || "",
+      description: product.description || "",
+      type: product.type || "digital",
+      inStock: product.inStock ?? true,
+    });
+
+  
+    const combos = product.imageCombinations?.map((combo) => ({
+      dialColor: combo.dialColor || "",
+      bandColor: combo.bandColor || "",
+      image: null, 
+    })) || [{ dialColor: "", bandColor: "", image: null }];
+
+    setImageInputs(combos);
+    setIsUpdateMode(true);
+    setUpdateProductId(product._id);
+    setModalOpen(true);
   };
 
   return (
@@ -54,7 +157,7 @@ const Products = () => {
         Add Product
       </button>
 
-      {/* Product Table */}
+      
       <div className="overflow-x-auto">
         <table className="w-full border text-sm">
           <thead>
@@ -101,7 +204,7 @@ const Products = () => {
         </table>
       </div>
 
-      {/* Modal */}
+    
       {modalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg w-[500px] overflow-y-auto max-h-[80vh]">
