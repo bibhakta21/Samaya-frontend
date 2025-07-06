@@ -17,6 +17,25 @@ const Dashboard = () => {
   const { user, logout, setUser } = useContext(UserContext);
   const navigate = useNavigate();
 
+   // State for Profile Editing
+  const [editForm, setEditForm] = useState({
+    username: user?.username || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+  });
+  const [error, setError] = useState("");
+
+  // Sidebar menu items
+  const menuItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: <FaHouse /> },
+    { id: 'products', label: 'Products', icon: <FaBox /> },
+    { id: 'orders', label: 'Orders', icon: <FaCartShopping /> },
+    { id: 'users', label: 'Users', icon: <FaUserPlus /> },
+    { id: 'contacts', label: 'Contacts', icon: <FaPhone /> },
+
+  ];
+
+
 
   
 
