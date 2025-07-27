@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useContext } from "react";
+import axios from "axios";
+import { useContext, useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
 import { FaCartPlus, FaHeart } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { toast } from "react-hot-toast";
 import { UserContext } from "../../context/UserContext";
 
 const backendURL = "http://localhost:3000";
@@ -82,10 +82,12 @@ const ProductCard = ({ product, isBookmarked, onToggleBookmark, onAddToCart }) =
 
 // --------- Main Component ---------
 const NumberCounter = () => {
-  const { user } = useContext(UserContext);
+  const { user, setCartCount } = useContext(UserContext);
   const [products, setProducts] = useState([]);
   const [bookmarkedIds, setBookmarkedIds] = useState(new Set());
   const token = localStorage.getItem("token");
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -114,9 +116,24 @@ const NumberCounter = () => {
     fetchBookmarks();
   }, [user]);
 
+  const fetchCartCount = async () => {
+    try {
+      const res = await axios.get(`${backendURL}/api/bookings`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const userCart = res.data.filter((item) => !item.addressOne); // only unconfirmed
+      setCartCount(userCart.length);
+    } catch (err) {
+      console.error("Failed to fetch cart count", err);
+    }
+  };
+
   const toggleBookmark = async (productId) => {
     if (!user) {
       toast.error("Please login to bookmark products");
+       setTimeout(() => {
+      navigate("/login");
+    }, 1000);
       return;
     }
 
@@ -147,6 +164,9 @@ const NumberCounter = () => {
   const handleAddToCart = async (product) => {
     if (!user) {
       toast.error("Please login to buy");
+       setTimeout(() => {
+      navigate("/login");
+    }, 1000);
       return;
     }
 
@@ -176,6 +196,7 @@ const NumberCounter = () => {
         }
       );
       toast.success("Product added to cart");
+      fetchCartCount(); // 🔄 update cart count
     } catch (err) {
       console.error("Booking failed:", err);
       toast.error("Failed to add to cart");

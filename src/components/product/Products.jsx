@@ -1,15 +1,17 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { FaCartPlus, FaHeart, FaFilter } from "react-icons/fa";
 import { toast } from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
+
 
 const backendURL = "http://localhost:3000";
 
 const ProductCard = ({ product, isBookmarked, onToggleBookmark }) => {
   const navigate = useNavigate();
-  const { user } = useContext(UserContext);
+  const { user, fetchCartCount } = useContext(UserContext); // Now we get fetchCartCount
+  
   const token = localStorage.getItem("token");
 
   if (!product || !Array.isArray(product.imageCombinations)) {
@@ -35,46 +37,44 @@ const ProductCard = ({ product, isBookmarked, onToggleBookmark }) => {
     onToggleBookmark(product._id);
   };
 
- const handleAddToCart = async (e) => {
-  e.stopPropagation();
-  if (!user) {
-    toast.error("Please login to buy");
-    return;
-  }
+  const handleAddToCart = async (e) => {
+    e.stopPropagation();
+    if (!user) {
+      toast.error("Please login to buy");
+       setTimeout(() => {
+      navigate("/login");
+    }, 1000);
+      return;
+    }
 
-  try {
-    const res = await axios.post(
-      `${backendURL}/api/bookings`,
-      {
-        productId: product._id,
-        quantity: 1,
-        productImage: defaultCombo?.imageUrl || "",
-        productShortName: product.shortName,
-        price: product.discountPrice || product.price,
-        dialColor: defaultCombo?.dialColor || null,
-        bandColor: defaultCombo?.bandColor || null,
-        addressOne: null,
-        country: null,
-        number: null,
-        paymentType: null,
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-
-    toast.success("Product added to cart");
-
-    // 👇 Wait 2 seconds before reloading
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000); // 2000 milliseconds = 2 seconds
-  } catch (err) {
-    console.error("Booking failed:", err);
-    toast.error("Failed to add to cart");
-  }
-};
-
+    try {
+      await axios.post(
+        `${backendURL}/api/bookings`,
+        {
+          productId: product._id,
+          quantity: 1,
+          productImage: defaultCombo?.imageUrl || "",
+          productShortName: product.shortName,
+          price: product.discountPrice || product.price,
+          dialColor: defaultCombo?.dialColor || null,
+          bandColor: defaultCombo?.bandColor || null,
+          addressOne: null,
+          country: null,
+          number: null,
+          paymentType: null,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      toast.success("Product added to cart");
+      // Update the global cart count without reloading the page
+      fetchCartCount();
+    } catch (err) {
+      console.error("Booking failed:", err);
+      toast.error("Failed to add to cart");
+    }
+  };
 
   return (
     <div
@@ -97,9 +97,13 @@ const ProductCard = ({ product, isBookmarked, onToggleBookmark }) => {
           <button
             onClick={handleBookmarkClick}
             className={`p-2 rounded-full hover:scale-110 transition ${
-              isBookmarked ? "bg-red-500 text-white" : "bg-gray-300 text-gray-600"
+              isBookmarked
+                ? "bg-red-500 text-white"
+                : "bg-gray-300 text-gray-600"
             }`}
-            aria-label={isBookmarked ? "Remove from favorites" : "Add to favorites"}
+            aria-label={
+              isBookmarked ? "Remove from favorites" : "Add to favorites"
+            }
           >
             <FaHeart />
           </button>
@@ -108,14 +112,24 @@ const ProductCard = ({ product, isBookmarked, onToggleBookmark }) => {
 
       <div className="text-center mt-4 space-y-1">
         <h3 className="text-base font-semibold">{product.shortName}</h3>
-        <div className="text-yellow-400 text-sm">{"★".repeat(product.rating || 4)}</div>
+        <div className="text-yellow-400 text-sm">
+          {"★".repeat(product.rating || 4)}
+        </div>
         <div className="text-base font-medium">
-          <span className="line-through text-gray-400 mr-2">
-            RS{product.price.toFixed(2)}
-          </span>
-          <span className="text-black font-bold">
-            RS{(product.discountPrice || product.price).toFixed(2)}
-          </span>
+          {product.discountPrice ? (
+            <>
+              <span className="line-through text-gray-400 mr-2">
+                RS{product.price.toFixed(2)}
+              </span>
+              <span className="text-black font-bold">
+                RS{product.discountPrice.toFixed(2)}
+              </span>
+            </>
+          ) : (
+            <span className="text-black font-bold">
+              RS{product.price.toFixed(2)}
+            </span>
+          )}
         </div>
       </div>
     </div>
@@ -131,8 +145,13 @@ const Product = () => {
   const [priceRange, setPriceRange] = useState(0);
   const [maxPrice, setMaxPrice] = useState(100000);
   const [categories, setCategories] = useState([]);
+  const navigate = useNavigate();
 
+  const location = useLocation();
   const token = localStorage.getItem("token");
+
+  const searchQuery =
+    new URLSearchParams(location.search).get("search")?.toLowerCase() || "";
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -145,7 +164,9 @@ const Product = () => {
         setMaxPrice(max);
         setPriceRange(max);
 
-        const uniqueCategories = [...new Set(res.data.map((p) => p.type))];
+        const uniqueCategories = [
+          ...new Set(res.data.map((p) => p.type)),
+        ];
         setCategories(uniqueCategories);
       } catch (err) {
         console.error("Failed to fetch products:", err.message);
@@ -172,6 +193,9 @@ const Product = () => {
   const toggleBookmark = async (productId) => {
     if (!user) {
       toast.error("Please login to bookmark products");
+      setTimeout(() => {
+      navigate("/login");
+    }, 1000);
       return;
     }
 
@@ -200,11 +224,15 @@ const Product = () => {
   };
 
   const filteredProducts = products.filter((product) => {
-    const categoryMatch = selectedCategory === "All" || product.type === selectedCategory;
+    const categoryMatch =
+      selectedCategory === "All" || product.type === selectedCategory;
     const stockMatch = !inStockOnly || product.inStock;
     const price = product.discountPrice || product.price;
     const priceMatch = price <= priceRange;
-    return categoryMatch && stockMatch && priceMatch;
+    const nameMatch = product.shortName
+      .toLowerCase()
+      .includes(searchQuery);
+    return categoryMatch && stockMatch && priceMatch && nameMatch;
   });
 
   return (
@@ -219,13 +247,24 @@ const Product = () => {
             </div>
 
             <div>
-              <h4 className="text-lg font-semibold border-b pb-2 mb-3">Applied Filters</h4>
+              <h4 className="text-lg font-semibold border-b pb-2 mb-3">
+                Applied Filters
+              </h4>
               <div className="flex flex-wrap gap-2 text-sm">
                 {selectedCategory !== "All" && (
-                  <span className="bg-gray-200 px-3 py-1 rounded-full">{selectedCategory}</span>
+                  <span className="bg-gray-200 px-3 py-1 rounded-full">
+                    {selectedCategory}
+                  </span>
                 )}
                 {inStockOnly && (
-                  <span className="bg-gray-200 px-3 py-1 rounded-full">In Stock</span>
+                  <span className="bg-gray-200 px-3 py-1 rounded-full">
+                    In Stock
+                  </span>
+                )}
+                {searchQuery && (
+                  <span className="bg-gray-200 px-3 py-1 rounded-full">
+                    Search: {searchQuery}
+                  </span>
                 )}
                 <span
                   className="text-blue-500 cursor-pointer"
@@ -244,7 +283,10 @@ const Product = () => {
               <h4 className="text-lg font-semibold mb-2">Category</h4>
               <div className="space-y-2 text-sm">
                 {["All", ...categories].map((cat) => (
-                  <label key={cat} className="flex items-center gap-2 cursor-pointer">
+                  <label
+                    key={cat}
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
                     <input
                       type="radio"
                       name="category"
@@ -259,7 +301,9 @@ const Product = () => {
             </div>
 
             <div>
-              <h4 className="text-lg font-semibold mb-2">Stock Status</h4>
+              <h4 className="text-lg font-semibold mb-2">
+                Stock Status
+              </h4>
               <label className="flex items-center gap-2 text-sm cursor-pointer">
                 <input
                   type="checkbox"
@@ -272,14 +316,18 @@ const Product = () => {
             </div>
 
             <div>
-              <h4 className="text-lg font-semibold mb-2">Max Price: RS{priceRange}</h4>
+              <h4 className="text-lg font-semibold mb-2">
+                Max Price: RS{priceRange}
+              </h4>
               <input
                 type="range"
                 min="100"
                 max={maxPrice}
                 step="100"
                 value={priceRange}
-                onChange={(e) => setPriceRange(Number(e.target.value))}
+                onChange={(e) =>
+                  setPriceRange(Number(e.target.value))
+                }
                 className="w-full accent-black"
               />
             </div>
@@ -288,7 +336,9 @@ const Product = () => {
           {/* Product Grid */}
           <div>
             {filteredProducts.length === 0 ? (
-              <p className="text-gray-500">No products match the selected filters.</p>
+              <p className="text-gray-500">
+                No products match the selected filters.
+              </p>
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 justify-items-center">
                 {filteredProducts.map((product) => (

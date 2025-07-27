@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaCartPlus, FaHeart } from "react-icons/fa";
+import { useContext, useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
+import { FaCartPlus, FaHeart } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { UserContext } from "../../context/UserContext";
 
 const backendURL = "http://localhost:3000";
 
 // ---------- ProductCard ----------
-const ProductCard = ({ product, onBookmarkToggle, onAddToCart }) => {
+const ProductCard = ({ product, onToggleBookmark, onAddToCart }) => {
   const navigate = useNavigate();
 
   const defaultCombo =
@@ -21,25 +22,12 @@ const ProductCard = ({ product, onBookmarkToggle, onAddToCart }) => {
       : defaultCombo.imageUrl
     : "";
 
-  const handleToggleBookmark = async (e) => {
-    e.stopPropagation(); // prevent redirect
-    const token = localStorage.getItem("token");
-    try {
-      const res = await axios.post(
-        `${backendURL}/api/bookmarks/${product._id}`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      toast.success(res.data.message || "Bookmark updated");
-      onBookmarkToggle(); // refresh bookmarks list
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to update bookmark");
-    }
+  const handleToggleBookmark = (e) => {
+    e.stopPropagation();
+    onToggleBookmark(product._id); // tell parent to toggle
   };
 
-  const handleAddToCartClick = async (e) => {
+  const handleAddToCartClick = (e) => {
     e.stopPropagation();
     onAddToCart(product, defaultCombo);
   };
@@ -79,7 +67,9 @@ const ProductCard = ({ product, onBookmarkToggle, onAddToCart }) => {
 
       <div className="text-center mt-4 space-y-1">
         <h3 className="text-base font-semibold">{product.shortName}</h3>
-        <div className="text-yellow-400 text-sm">{"★".repeat(product.rating || 4)}</div>
+        <div className="text-yellow-400 text-sm">
+          {"★".repeat(product.rating || 4)}
+        </div>
         <div className="text-base font-medium">
           <span className="line-through text-gray-400 mr-2">
             RS{product.price.toFixed(2)}
@@ -96,14 +86,14 @@ const ProductCard = ({ product, onBookmarkToggle, onAddToCart }) => {
 // ---------- Bookmark Component ----------
 const Bookmark = () => {
   const [bookmarkedProducts, setBookmarkedProducts] = useState([]);
+  const { setCartCount } = useContext(UserContext);
+
+  const token = localStorage.getItem("token");
 
   const fetchBookmarks = async () => {
     try {
-      const token = localStorage.getItem("token");
       const res = await axios.get(`${backendURL}/api/bookmarks`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       setBookmarkedProducts(res.data);
     } catch (err) {
@@ -112,12 +102,33 @@ const Bookmark = () => {
     }
   };
 
-  useEffect(() => {
-    fetchBookmarks();
-  }, []);
+  const handleToggleBookmark = async (productId) => {
+    try {
+      const res = await axios.post(
+        `${backendURL}/api/bookmarks/${productId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success(res.data?.message || "Bookmark updated");
+      fetchBookmarks(); // refresh list after toggle
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Failed to update bookmark");
+    }
+  };
+
+  const fetchCartCount = async () => {
+    try {
+      const res = await axios.get(`${backendURL}/api/bookings`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const unconfirmed = res.data.filter((item) => !item.addressOne);
+      setCartCount(unconfirmed.length);
+    } catch (err) {
+      console.error("Cart fetch failed:", err);
+    }
+  };
 
   const handleAddToCart = async (product, defaultCombo) => {
-    const token = localStorage.getItem("token");
     if (!token) {
       toast.error("Please login to buy");
       return;
@@ -144,15 +155,20 @@ const Bookmark = () => {
         }
       );
       toast.success("Product added to cart");
+      fetchCartCount();
     } catch (err) {
       console.error("Add to cart failed:", err);
       toast.error("Failed to add to cart");
     }
   };
 
+  useEffect(() => {
+    fetchBookmarks(); // load on mount
+  }, []);
+
   return (
     <section className="py-12 px-4 sm:px-6 lg:px-10">
-      <Toaster position="top-right" />
+      <Toaster position="top-right" toastOptions={{ style: { marginTop: "60px" } }} />
       <div className="max-w-7xl mx-auto">
         <h2 className="text-2xl font-semibold mb-6">My Bookmarks</h2>
         {bookmarkedProducts.length === 0 ? (
@@ -163,7 +179,7 @@ const Bookmark = () => {
               <ProductCard
                 key={product._id}
                 product={product}
-                onBookmarkToggle={fetchBookmarks}
+                onToggleBookmark={handleToggleBookmark}
                 onAddToCart={handleAddToCart}
               />
             ))}
