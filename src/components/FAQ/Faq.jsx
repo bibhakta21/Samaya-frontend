@@ -37,7 +37,7 @@ const faqs = [
 export default function FAQPage() {
   return (
     <div className="flex flex-col md:flex-row p-6 md:p-12  gap-10">
-    
+     
       <div className="md:w-1/3 space-y-6">
         {faqs.map((faq) => (
           <ScrollLink
@@ -53,7 +53,15 @@ export default function FAQPage() {
         ))}
       </div>
 
-   
+     
+      <div className="md:w-2/3 space-y-10">
+        {faqs.map((faq) => (
+          <Element key={faq.id} name={faq.id} className="scroll-mt-20">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">{faq.question}</h2>
+            <p className="text-gray-700 leading-relaxed">{faq.answer}</p>
+          </Element>
+        ))}
+      </div>
     </div>
   );
 }

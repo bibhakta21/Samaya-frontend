@@ -13,29 +13,57 @@ export default function Register() {
     password: "",
     confirmPassword: ""
   });
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState("");
   const navigate = useNavigate();
 
+  const validateField = (name, value) => {
+    let message = "";
+
+    if (name === "username" && value.length < 5) {
+      message = "Username must be at least 5 characters.";
+    }
+
+    if (name === "email" && !value.endsWith("@gmail.com")) {
+      message = "Email must end with @gmail.com";
+    }
+
+    if (name === "password" && value.length < 8) {
+      message = "Password must be at least 8 characters.";
+    }
+
+    if (name === "confirmPassword" && value !== formData.password) {
+      message = "Passwords do not match.";
+    }
+
+    setErrors((prev) => ({ ...prev, [name]: message }));
+  };
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError("");
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    validateField(name, value);
+    setSubmitError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setSubmitError("");
+
+    if (Object.values(errors).some((err) => err)) {
+      setSubmitError("Please fix validation errors.");
+      return;
+    }
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match.");
+      setSubmitError("Passwords do not match.");
       return;
     }
 
     try {
       const response = await fetch("http://localhost:3000/api/users/signup", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username: formData.username,
           email: formData.email,
@@ -50,10 +78,10 @@ export default function Register() {
         setFormData({ username: "", email: "", password: "", confirmPassword: "" });
         setTimeout(() => navigate("/login"), 2000);
       } else {
-        setError(data.error || "Registration failed. Please try again.");
+        setSubmitError(data.error || "Registration failed. Please try again.");
       }
     } catch (err) {
-      setError("Something went wrong. Please try again.");
+      setSubmitError("Something went wrong. Please try again.");
     }
   };
 
@@ -64,11 +92,7 @@ export default function Register() {
         <h1 className="text-white text-4xl font-bold mb-4 self-start ml-4">
           Samaya<span className="text-orange-400">.</span>
         </h1>
-        <img
-          src={watch}
-          alt="watch"
-          className="max-w-xs w-full object-contain"
-        />
+        <img src={watch} alt="watch" className="max-w-xs w-full object-contain" />
       </div>
 
       {/* Right Section */}
@@ -78,89 +102,101 @@ export default function Register() {
         </h2>
         <p className="text-gray-500 text-center mb-6">Sign Up to Get Started</p>
 
-        {error && (
-          <p className="text-red-500 text-sm text-center mb-4">{error}</p>
+        {submitError && (
+          <p className="text-red-500 text-sm text-center mb-4">{submitError}</p>
         )}
 
         <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
-          {/* Full Name Input */}
-          <div className="relative">
-            <input
-              type="text"
-              name="username"
-              placeholder="Full Name"
-              value={formData.username}
-              onChange={handleChange}
-              className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-            <div className="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
-              <FiUser size={20} />
+          {/* Username */}
+          <div className="flex flex-col gap-1">
+            <div className="relative">
+              <input
+                type="text"
+                name="username"
+                placeholder="Full Name"
+                value={formData.username}
+                onChange={handleChange}
+                className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+              <div className="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
+                <FiUser size={20} />
+              </div>
             </div>
+            {errors.username && <p className="text-red-500 text-sm">{errors.username}</p>}
           </div>
 
-          {/* Email Input */}
-          <div className="relative">
-            <input
-              type="email"
-              name="email"
-              placeholder="Email Address"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-            <div className="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
-              <FiMail size={20} />
+          {/* Email */}
+          <div className="flex flex-col gap-1">
+            <div className="relative">
+              <input
+                type="email"
+                name="email"
+                placeholder="Email Address"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+              <div className="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
+                <FiMail size={20} />
+              </div>
             </div>
+            {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
           </div>
 
-          {/* Password Input */}
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-            <div className="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
-              <FiLock size={20} />
+          {/* Password */}
+          <div className="flex flex-col gap-1">
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+              <div className="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
+                <FiLock size={20} />
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-3 flex items-center text-gray-600 hover:text-gray-900 focus:outline-none"
+                tabIndex={-1}
+              >
+                {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-3 flex items-center text-gray-600 hover:text-gray-900 focus:outline-none"
-              tabIndex={-1}
-            >
-              {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
-            </button>
+            {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
           </div>
 
-          {/* Confirm Password Input */}
-          <div className="relative">
-            <input
-              type={showConfirmPassword ? "text" : "password"}
-              name="confirmPassword"
-              placeholder="Confirm Password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-            <div className="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
-              <FiLock size={20} />
+          {/* Confirm Password */}
+          <div className="flex flex-col gap-1">
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                placeholder="Confirm Password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+              <div className="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
+                <FiLock size={20} />
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute inset-y-0 right-3 flex items-center text-gray-600 hover:text-gray-900 focus:outline-none"
+                tabIndex={-1}
+              >
+                {showConfirmPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute inset-y-0 right-3 flex items-center text-gray-600 hover:text-gray-900 focus:outline-none"
-              tabIndex={-1}
-            >
-              {showConfirmPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
-            </button>
+            {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}
           </div>
 
           <button

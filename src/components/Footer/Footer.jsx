@@ -4,6 +4,8 @@ import {
   FaTwitter,
   FaYoutube,
 } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import logo from "../../assets/logo1.png"; // Adjust this path as needed
 
 const Footer = () => {
   return (
@@ -11,29 +13,43 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-4 py-12 grid md:grid-cols-4 gap-y-12 gap-x-16">
         {/* Brand & Testimonial */}
         <div>
-          <h1 className="text-3xl font-bold">
-            Samaya<span className="text-orange-400">.</span>
-          </h1>
+          <img
+            src={logo}
+            alt="Samaya Logo"
+            className="w-40 h-auto object-contain"
+          />
           <p className="mt-4 text-sm leading-relaxed text-[#8b8e99]">
             Don’t waste time, just order! This is the best website to purchase
             watches. Best e-commerce site in Nepal. I liked the service of
-            samaya.
+            Samaya.
           </p>
-                  <div className="flex gap-4 mt-6">
-          <a href="#" className="bg-[#1d4ed8] w-8 h-8 flex items-center justify-center rounded-full">
-            <FaFacebookF className="text-white text-base" />
-          </a>
-          <a href="#" className="bg-[#1d4ed8] w-8 h-8 flex items-center justify-center rounded-full">
-            <FaTwitter className="text-white text-base" />
-          </a>
-          <a href="#" className="bg-[#1d4ed8] w-8 h-8 flex items-center justify-center rounded-full">
-            <FaInstagram className="text-white text-base" />
-          </a>
-          <a href="#" className="bg-[#1d4ed8] w-8 h-8 flex items-center justify-center rounded-full">
-            <FaYoutube className="text-white text-base" />
-          </a>
-        </div>
 
+          <div className="flex gap-4 mt-6">
+            <a
+              href="#"
+              className="bg-[#1d4ed8] w-8 h-8 flex items-center justify-center rounded-full"
+            >
+              <FaFacebookF className="text-white text-base" />
+            </a>
+            <a
+              href="#"
+              className="bg-[#1d4ed8] w-8 h-8 flex items-center justify-center rounded-full"
+            >
+              <FaTwitter className="text-white text-base" />
+            </a>
+            <a
+              href="#"
+              className="bg-[#1d4ed8] w-8 h-8 flex items-center justify-center rounded-full"
+            >
+              <FaInstagram className="text-white text-base" />
+            </a>
+            <a
+              href="#"
+              className="bg-[#1d4ed8] w-8 h-8 flex items-center justify-center rounded-full"
+            >
+              <FaYoutube className="text-white text-base" />
+            </a>
+          </div>
         </div>
 
         {/* Support */}
@@ -42,17 +58,37 @@ const Footer = () => {
           <p className="text-sm text-[#8b8e99]">Kalanki, Kathmandu</p>
           <p className="text-sm mt-2 text-[#8b8e99]">samaya@info.com</p>
           <p className="text-sm mt-2 text-[#8b8e99]">+977-9813056161</p>
-          <p className="text-sm mt-2 text-[#8b8e99]">Frequently Asked Questions</p>
+          <Link to="/faq">
+            <p className="text-sm mt-2 text-[#8b8e99] hover:text-orange-400 transition">
+              Frequently Asked Questions
+            </p>
+          </Link>
         </div>
 
         {/* Quick Links */}
         <div>
           <h2 className="text-lg font-semibold mb-4">Quick Links</h2>
           <ul className="space-y-2 text-sm text-[#8b8e99]">
-            <li><a href="#" className="hover:text-orange-400">Home</a></li>
-            <li><a href="#" className="hover:text-orange-400">Products</a></li>
-            <li><a href="#" className="hover:text-orange-400">About</a></li>
-            <li><a href="#" className="hover:text-orange-400">Contacts</a></li>
+            <li>
+              <Link to="/" className="hover:text-orange-400">
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link to="/products" className="hover:text-orange-400">
+                Products
+              </Link>
+            </li>
+            <li>
+              <Link to="/about" className="hover:text-orange-400">
+                About
+              </Link>
+            </li>
+            <li>
+              <Link to="/contact" className="hover:text-orange-400">
+                Contacts
+              </Link>
+            </li>
           </ul>
         </div>
 
@@ -68,13 +104,14 @@ const Footer = () => {
             allowFullScreen=""
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
+            className="rounded-lg"
           ></iframe>
         </div>
       </div>
 
       {/* Copyright */}
       <div className="border-t border-gray-700 text-center py-4 text-sm text-white/80">
-        Copyright @ 2025 | Samaya
+        Copyright © 2025 | Samaya
       </div>
     </div>
   );
