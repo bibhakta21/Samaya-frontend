@@ -5,13 +5,11 @@ import { toast } from "react-hot-toast";
 import { useNavigate, useLocation } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
 
-
 const backendURL = "http://localhost:3000";
 
 const ProductCard = ({ product, isBookmarked, onToggleBookmark }) => {
   const navigate = useNavigate();
-  const { user, fetchCartCount } = useContext(UserContext); // Now we get fetchCartCount
-  
+  const { user, fetchCartCount } = useContext(UserContext);
   const token = localStorage.getItem("token");
 
   if (!product || !Array.isArray(product.imageCombinations)) {
@@ -41,9 +39,9 @@ const ProductCard = ({ product, isBookmarked, onToggleBookmark }) => {
     e.stopPropagation();
     if (!user) {
       toast.error("Please login to buy");
-       setTimeout(() => {
-      navigate("/login");
-    }, 1000);
+      setTimeout(() => {
+        navigate("/login");
+      }, 1000);
       return;
     }
 
@@ -68,7 +66,6 @@ const ProductCard = ({ product, isBookmarked, onToggleBookmark }) => {
         }
       );
       toast.success("Product added to cart");
-      // Update the global cart count without reloading the page
       fetchCartCount();
     } catch (err) {
       console.error("Booking failed:", err);
@@ -97,13 +94,9 @@ const ProductCard = ({ product, isBookmarked, onToggleBookmark }) => {
           <button
             onClick={handleBookmarkClick}
             className={`p-2 rounded-full hover:scale-110 transition ${
-              isBookmarked
-                ? "bg-red-500 text-white"
-                : "bg-gray-300 text-gray-600"
+              isBookmarked ? "bg-red-500 text-white" : "bg-gray-300 text-gray-600"
             }`}
-            aria-label={
-              isBookmarked ? "Remove from favorites" : "Add to favorites"
-            }
+            aria-label={isBookmarked ? "Remove from favorites" : "Add to favorites"}
           >
             <FaHeart />
           </button>
@@ -112,9 +105,7 @@ const ProductCard = ({ product, isBookmarked, onToggleBookmark }) => {
 
       <div className="text-center mt-4 space-y-1">
         <h3 className="text-base font-semibold">{product.shortName}</h3>
-        <div className="text-yellow-400 text-sm">
-          {"★".repeat(product.rating || 4)}
-        </div>
+        <div className="text-yellow-400 text-sm">{"★".repeat(product.rating || 4)}</div>
         <div className="text-base font-medium">
           {product.discountPrice ? (
             <>
@@ -145,6 +136,7 @@ const Product = () => {
   const [priceRange, setPriceRange] = useState(0);
   const [maxPrice, setMaxPrice] = useState(100000);
   const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   const location = useLocation();
@@ -156,6 +148,9 @@ const Product = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoading(true);
+        const start = Date.now();
+
         const res = await axios.get(`${backendURL}/api/products`);
         setProducts(res.data);
 
@@ -164,12 +159,18 @@ const Product = () => {
         setMaxPrice(max);
         setPriceRange(max);
 
-        const uniqueCategories = [
-          ...new Set(res.data.map((p) => p.type)),
-        ];
+        const uniqueCategories = [...new Set(res.data.map((p) => p.type))];
         setCategories(uniqueCategories);
+
+        // Force minimum 1.5s loading duration
+        const elapsed = Date.now() - start;
+        const delay = Math.max(1500 - elapsed, 0);
+        setTimeout(() => {
+          setLoading(false);
+        }, delay);
       } catch (err) {
         console.error("Failed to fetch products:", err.message);
+        setLoading(false);
       }
     };
 
@@ -193,9 +194,7 @@ const Product = () => {
   const toggleBookmark = async (productId) => {
     if (!user) {
       toast.error("Please login to bookmark products");
-      setTimeout(() => {
-      navigate("/login");
-    }, 1000);
+      setTimeout(() => navigate("/login"), 1000);
       return;
     }
 
@@ -229,9 +228,7 @@ const Product = () => {
     const stockMatch = !inStockOnly || product.inStock;
     const price = product.discountPrice || product.price;
     const priceMatch = price <= priceRange;
-    const nameMatch = product.shortName
-      .toLowerCase()
-      .includes(searchQuery);
+    const nameMatch = product.shortName.toLowerCase().includes(searchQuery);
     return categoryMatch && stockMatch && priceMatch && nameMatch;
   });
 
@@ -246,6 +243,7 @@ const Product = () => {
               <span>Filters</span>
             </div>
 
+            {/* Applied Filters */}
             <div>
               <h4 className="text-lg font-semibold border-b pb-2 mb-3">
                 Applied Filters
@@ -279,14 +277,12 @@ const Product = () => {
               </div>
             </div>
 
+            {/* Category Filter */}
             <div>
               <h4 className="text-lg font-semibold mb-2">Category</h4>
               <div className="space-y-2 text-sm">
                 {["All", ...categories].map((cat) => (
-                  <label
-                    key={cat}
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
+                  <label key={cat} className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       name="category"
@@ -300,10 +296,9 @@ const Product = () => {
               </div>
             </div>
 
+            {/* Stock Status Filter */}
             <div>
-              <h4 className="text-lg font-semibold mb-2">
-                Stock Status
-              </h4>
+              <h4 className="text-lg font-semibold mb-2">Stock Status</h4>
               <label className="flex items-center gap-2 text-sm cursor-pointer">
                 <input
                   type="checkbox"
@@ -315,6 +310,7 @@ const Product = () => {
               </label>
             </div>
 
+            {/* Price Range Filter */}
             <div>
               <h4 className="text-lg font-semibold mb-2">
                 Max Price: RS{priceRange}
@@ -325,20 +321,21 @@ const Product = () => {
                 max={maxPrice}
                 step="100"
                 value={priceRange}
-                onChange={(e) =>
-                  setPriceRange(Number(e.target.value))
-                }
+                onChange={(e) => setPriceRange(Number(e.target.value))}
                 className="w-full accent-black"
               />
             </div>
           </aside>
 
-          {/* Product Grid */}
+          {/* Product Grid or Loading */}
           <div>
-            {filteredProducts.length === 0 ? (
-              <p className="text-gray-500">
-                No products match the selected filters.
-              </p>
+            {loading ? (
+              <div className="text-center w-full py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto"></div>
+                <p className="mt-4 text-gray-500">Loading products...</p>
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <p className="text-gray-500">No products match the selected filters.</p>
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 justify-items-center">
                 {filteredProducts.map((product) => (
